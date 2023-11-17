@@ -1,0 +1,224 @@
+
+Creating a Parser:
+
+1. Step is Tokenisation ( lexical analysis)
+
+cat file | grep name
+
+we have three classes:
+
+    ;, |, >, >>, <, <<, &
+
+every string inbetween is a procces on its own
+
+                         __ PIPELINE__
+                     ___/              \____
+                    /                       \
+            COMMAND                    __ PIPELINE _
+          /        \                  /             \
+    ARGUMENTS   REDIRECTIONS      COMMAND         _ COMMAND __
+        |          |     |           |           /            \
+       cat        <<     >       ARGUMENTS    ARGUMENTS   REDIRECTIONS
+                   |     |         |   |      |   |   |        |
+                 "..."  file      wc  -c      tr  -d " "       >
+                                                               |
+                                                             file2
+
+
+
+Explanation Redirects:
+
+>
+    Standard output. inseat fo putting the result on the screen it redirects it into a file for example
+
+        ls > file.txt
+
+>>
+    Append to the file.
+
+<
+    Standart input
+
+<<
+    Append 
+
+
+-- without argument --
+
+cat                     If you run the cat command without any arguments in a Unix-like shell, it will start 
+                        reading from standard input (stdin) and echo whatever you type back to the terminal 
+                        until you signal the end of the input with Ctrl+D (end of file).
+
+cat >                   parse error near `\n'
+
+cat >>                  parse error near `\n'
+
+cat <                   parse error near `\n'
+
+cat <<                  parse error near `\n'
+
+
+-- with argument --
+
+cat s >                 parse error near `\n'
+
+cat s >>                parse error near `\n'
+
+cat s <                 parse error near `\n'
+
+cat s <<                parse error near `\n'
+
+
+-- without arg, with redirection
+
+cat > file              it starts reading from the stdin. instead of echoing it into the stdout, it will redirect
+                        the output to file. If not created it will create it
+
+cat >> file             append everything 
+
+cat < s {notFile}       no such file or directory: s
+
+cat << s {notfile}      s indicates the end of the input. you will be forewarded to a here docs where you can provide an Input.
+                        the last line will be an s ENTER.
+                        After that the input forwarded to the stdout.
+
+cat < s {File}          attemts to open the File and takes the input as argument to pass it to stdout
+
+cat << s {File}         s indicates the end of the input. you will be forewarded to a here docs where you can provide an Input.
+                        the last line will be an s ENTER.
+                        After that the input forwarded to the stdout.
+
+
+
+
+ |  &  ;  <  >  (  )  $  `  \  "  '  <space>  <tab>  <newline>
+
+ and the following may need to be quoted under certain circumstances. That is, these characters may be special depending on conditions described elsewhere in this volume of IEEE Std 1003.1-2001:
+
+ *   ?   []   #   ˜   =   %
+
+what 
+
+$> |
+
+history
+
+/bin/ls
+ls
+
+global var indicates signal
+
+xxxx " ls doenlsfd xxxx     unclosed quotes don't interpret
+
+don't interpret special characters like ; &
+
+' 23k()#(#*@)(#*) '                 no prevention of interpreting metacharacters
+" 23k()#(#*@)(#*) $VARIABLE "     no prevention of interpreting metacharacters expept for $
+
+>>              should redirect output in append mode
+<<              should be given a delimiter, then read the input until a line containing the delimiter is seen. However, it doesn’t have to update the history!
+>               should redirect output.
+<               should redirect input.
+|               The output of each command in the pipeline is
+                connected to the input of the next command via a pipe.
+
+env var handle with ${SequenceOfChars} expand to values
+
+ctrl-C          displays a new prompt on a new line.
+ctrl-D          exits the shell.
+ctrl-\          does nothing.
+
+
+echo            with -n
+cd              only a relative or absolute path
+pwd             with no options
+export          with no options
+unset           with no options
+env             with no options or arguments
+exit            with no options
+
+
+readline() can cause memory leaks! rest of code can't!
+
+
+1. receive a string
+
+    "ls -la | grep rwx > file"    DONE;
+
+2. Tokenize the string into classes
+
+    ls:     [Command]
+    -la:    [Argument]
+    |:      [Pipe]
+    grep:   [Command]
+    rwx:    [Argument]
+
+3. make a AST Tree
+
+                            __ PIPE__
+                     ___/               \____
+                    /                        \
+            COMMAND                    __ PIPELINE _
+          /        \                  /             \
+    ARGUMENTS   REDIRECTIONS      COMMAND         _ COMMAND __
+        |          |     |           |           /            \
+       cat        <<     >       ARGUMENTS    ARGUMENTS   REDIRECTIONS
+                   |     |         |   |      |   |   |        |
+                 "..."  file      wc  -c      tr  -d " "       >
+                                                               |
+                                                             file2
+
+
+--- Tokenisation ---
+
+to make a tree we need a linked list.
+
+- link to parent
+- link to left
+- link to right
+- type of the node
+
+cat file file2 file3
+
+[OPERATION][ARGUMENT][ARGUMENT][ARGUMENT][ARGUMENT]
+
+How do I know if an argument is a operation or a file? 
+
+first we need to separate all the WORDS into separate characters!
+
+split for all spaces
+
+if " or ' skip
+
+$      hello       $
+$      hello "   whats up  "       $
+$      hel"whats up"lo       $
+$      hello       $
+$      hello       $
+
+cat file|grep something
+
+
+
+
+
+we have the strings now !
+
+ok now we need to categorize every single one.
+
+
+    COMMAND
+    REDIRECTION
+    PIPE	
+    ARGUMENT
+	ISFILE
+
+    idea!
+
+    go through string and make start end. then if there is an end safe it in a node 
+
+    ok now we finally have all elements separated.
+
+
+what Data do you want to 
+
