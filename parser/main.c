@@ -276,6 +276,28 @@ void	freesplit(char **split)
 	free(split);
 }
 
+char	*strappendpath(char *str, char *value)
+{
+	int		i;
+	int 	len;
+	char	*string;
+	int		j;
+
+	j = -1;
+	len = ft_strlen(str) + ft_strlen(value) + 2;
+	string = malloc(len);
+	i = -1;
+	while (str[++i])
+		string[++j] = str[i];
+	string[++j] = '/';
+	i = -1;
+	while (value[++i])
+		string[++j] = value[i];
+	string[++j] = '\0';
+	free(str);
+	return (string);
+}
+
 int	checkforargument(char *value, char **envp)
 {
 	char	**paths;
@@ -284,20 +306,18 @@ int	checkforargument(char *value, char **envp)
 	int i = -1;
 	if (access(value, X_OK) == 0)
 	{
-		// freesplit(paths);
+		freesplit(paths);
 		return (1);
 	}
 	paths = ft_split(envp[checkforenv(envp, "PATH")], ':');
+	// str = ft_strjoin(paths[i], "/");
+	// str = ft_strjoin(paths[i], value);
 	while (paths[++i])
-	{
-		paths[i] = ft_strjoin(paths[i], "/");
-		paths[i] = ft_strjoin(paths[i], value);
-	}
+		paths[i] = strappendpath(paths[i], value);
 	i = -1;
 	paths[0] = paths[0] + 5;
 	// while (paths[++i])
 	// 	printf("%s\n", paths[i]);
-
 
 	while (paths[++i])
 	{
@@ -308,21 +328,23 @@ int	checkforargument(char *value, char **envp)
 			return (1);
 		}
 	}
+	paths[0] = paths[0] - 5;
+	freesplit(paths);
 	return 0;
 }
 
-void	nodetype(s_string *node)
+void	tokenisation(s_string *node)
 {
 	if (node->value == "|")
 		node->nodeType = PIPE;
-	else if (node->value == ">" || node->value == ">>" || node->value == "<" || node->value == "<<")
+	else if (node->value[0] == '>' || ft_strncmp(node->value, ">>", 2) || node->value[0] == '<' || ft_strncmp(node->value, "<<", 2))
 		node->nodeType = REDIRECTION;
-	// else if ()
+	else if (checkfor)
 }
 
 void	modifynode(s_string *node)
 {
-	nodetype(node);
+	tokenisation(node);
 }
 
 s_string	*createlist(char **split)
@@ -349,9 +371,9 @@ int main(int argc, char **argv, char **envp)
         return 0;
 	char *s = "echo   my name is grep>><<><>0    \"|\' grep\' $PATH rwx \"| \'grep x@\' > file";
 	// if(!checkquotes(s))
-	// 	return 0;
+	// 	return 0; 
 	s_string *list;
-	// list = NULL;
+	list = NULL;
 	int i = -1;
 	char **ss = minisplit(s);
 	while (ss[++i])
@@ -361,13 +383,14 @@ int main(int argc, char **argv, char **envp)
 	// 	printf("%s\n", envp[i]);
 	// printf("%d, len: %d\n", checkforenv(envp, "PATH"), envlength(envp[3]));
 	printf("\n\n");
-	list = createlist(ss);
+	// list = createlist(ss);
 	// printf("%s\n", list->value);
-	while (list)
-	{
-		printf("%s\n", list->value);
-		list = list->next;
-	}
+	// while (list)
+	// {
+	// 	printf("%s\n", list->value);
+	// 	list = list->next;
+	// }
+	freesplit(ss);
 	printf("%d\n", checkforargument("cat", envp));
 }
 
