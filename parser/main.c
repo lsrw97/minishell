@@ -123,14 +123,13 @@ void	fillsplit(char **split, char *str)
 		if (str[i] == '\"')
 		{
 			i++;
-			split[j] = malloc(wordlendel(&str[i], '\"') + 2);
+			split[j] = malloc(wordlendel(&str[i], '\"') + 1);
 			// printf("wordlen: %d\n\n", wordlendel(&str[i], '\"') + 1);
 			while (str[i] != '\"' && str[i]) // '0123"hello" my name is "Albert     and I love  " pan   cakes      '
 			{
 				split[j][x++] = str[i++];
 				// printf("split[j]: %s, j: %d, i: %d\n", split[j], j, i);
 			}			
-			split[j][x++] = '\"';
 			split[j][x] = '\0';
 			// printf("split[j]: %s, j: %d\n", split[j], j);
 			x = 0;
@@ -140,13 +139,14 @@ void	fillsplit(char **split, char *str)
 		if (str[i] == '\'')
 		{
 			i++;
-			split[j] = malloc(wordlendel(&str[i], '\'') + 1);
+			split[j] = malloc(wordlendel(&str[i], '\'') + 2);
 			// printf("wordlen: %d\n\n", wordlendel(&str[i], '\'') + 1);
 			while (str[i] != '\'' && str[i]) // '0123"hello" my name is "Albert     and I love  " pan   cakes      '
 			{
 				split[j][x++] = str[i++];
 				// printf("split[j]: %s, j: %d, i: %d\n", split[j], j, i);
-			}			
+			}
+			split[j][x++] = '\"';
 			split[j][x] = '\0';
 			// printf("split[j]: %s, j: %d\n", split[j], j);
 			x = 0;
@@ -333,18 +333,53 @@ int	checkforargument(char *value, char **envp)
 	return 0;
 }
 
-void	tokenisation(s_string *node)
+void	nodetype(s_string *node, char **envp)
 {
 	if (node->value == "|")
 		node->nodeType = PIPE;
 	else if (node->value[0] == '>' || ft_strncmp(node->value, ">>", 2) || node->value[0] == '<' || ft_strncmp(node->value, "<<", 2))
 		node->nodeType = REDIRECTION;
-	else if (checkfor)
+	else if (checkforargument(node->value, envp))
+		node->nodeType = COMMAND;
+	else
+		node->nodeType = ARGUMENT;
 }
 
-void	modifynode(s_string *node)
+int	checkforenvinnode(char *string)
 {
-	tokenisation(node);
+	int	i;
+
+	i = -1;
+	while (string[++i])
+		if (string[i] == '$')
+			return (1);
+	return (0);
+}
+
+
+
+void	expandvars(s_string *node, char **envp)
+{
+	int	i;
+
+	i = -1;
+	if (!checkforenvinnode(node->value))
+		return ;
+	while (node->value[++i])
+	{
+		if (node->value[ft_strlen(node->value) - 1] == '\'')
+			break ;
+		// $PATH$PATH	$PATH hello $PATH
+		if (node->value[i] == '$')
+			
+	}
+}
+
+// Think about the expanding of the $VARS
+
+void	modifynode(s_string *node, char **envp)
+{
+	nodetype(node, envp);
 }
 
 s_string	*createlist(char **split)

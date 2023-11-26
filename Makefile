@@ -16,7 +16,7 @@ AR		= ar rcs
 
 RM		= rm -rf
 
-# CFLAGS	= -fsanitize=address -g
+CFLAGS	= -fsanitize=address -g
 
 NAMELFT		= libft.a
 
